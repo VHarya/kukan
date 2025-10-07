@@ -1,0 +1,110 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Board {
+  id       String     @id @default(cuid())
+  name     String
+  category Category[] @relation("BoardCategory")
+  list     TaskList[] @relation("BoardTaskList")
+
+  @@map("boards")
+}
+
+model Category {
+  id    String  @id @default(cuid())
+  name  String
+  board Board[] @relation("BoardCategory")
+
+  @@map("categories")
+}
+
+model TaskList {
+  id      String @id @default(cuid())
+  boardId String
+  name    String
+  color   String
+  board   Board  @relation("BoardTaskList", fields: [boardId], references: [id])
+  task    Task[] @relation("TaskList")
+
+  @@map("task_lists")
+}
+
+model Task {
+  id     String   @id @default(cuid())
+  listId String
+  task   String
+  list   TaskList @relation("TaskList", fields: [listId], references: [id])
+
+  @@map("tasks")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String
+  emailVerified Boolean
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  session       Session[] @relation("userSession")
+  account       Account[] @relation("userAccount")
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation("userSession", fields: [userId], references: [id])
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  idToken               String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation("userAccount", fields: [userId], references: [id])
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verification")
+}
