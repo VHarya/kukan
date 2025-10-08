@@ -15,10 +15,12 @@ datasource db {
 }
 
 model Board {
-  id       String     @id @default(cuid())
-  name     String
-  category Category[] @relation("BoardCategory")
-  list     TaskList[] @relation("BoardTaskList")
+  id        String     @id @default(cuid())
+  name      String
+  category  Category[] @relation("BoardCategory")
+  list      TaskList[] @relation("BoardTaskList")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   @@map("boards")
 }
@@ -32,21 +34,25 @@ model Category {
 }
 
 model TaskList {
-  id      String @id @default(cuid())
-  boardId String
-  name    String
-  color   String
-  board   Board  @relation("BoardTaskList", fields: [boardId], references: [id])
-  task    Task[] @relation("TaskList")
+  id        String   @id @default(cuid())
+  boardId   String
+  name      String
+  color     String
+  board     Board    @relation("BoardTaskList", fields: [boardId], references: [id])
+  task      Task[]   @relation("TaskList")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("task_lists")
 }
 
 model Task {
-  id     String   @id @default(cuid())
-  listId String
-  task   String
-  list   TaskList @relation("TaskList", fields: [listId], references: [id])
+  id        String   @id @default(cuid())
+  listId    String
+  task      String
+  list      TaskList @relation("TaskList", fields: [listId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("tasks")
 }
@@ -74,7 +80,7 @@ model Session {
   userAgent String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user      User     @relation("userSession", fields: [userId], references: [id])
+  user      User     @relation("userSession", fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("session")
 }
@@ -93,7 +99,7 @@ model Account {
   password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
-  user                  User      @relation("userAccount", fields: [userId], references: [id])
+  user                  User      @relation("userAccount", fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("account")
 }

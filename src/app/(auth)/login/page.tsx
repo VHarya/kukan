@@ -1,18 +1,28 @@
 "use client";
 
+import ErrorMessage from "@/components/dialog/ErrorMessage";
+import { loginUser } from "@/libs/actions/user";
 import { LucideEye, LucideEyeOff } from "lucide-react";
-import { useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 
 export default function LoginPage() {
-  const [showPassword, setShowPassword] = useState(false);
+  const [inputEmail, setInputEmail] = useState("");
+  const [inputPassword, setInputPassword] = useState("");
 
-  const onShowPasswordClick = () => {
-    setShowPassword(!showPassword);
-  };
+  const [showPassword, setShowPassword] = useState(false);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+
+  const [error, formAction, isLoading] = useActionState(loginUser, "");
+
+  useEffect(() => {
+    if (error.length > 0) {
+      setShowErrorDialog(true);
+    }
+  }, [error]);
 
   return (
     <>
-      <form action="" method="post" className="flex flex-col">
+      <form action={formAction} className="flex flex-col">
         <label htmlFor="email" className="mb-1">
           Email
         </label>
@@ -20,6 +30,10 @@ export default function LoginPage() {
           type="email"
           name="email"
           placeholder="johndoe@example.com"
+          defaultValue={inputEmail}
+          onChange={(e) => {
+            setInputEmail(e.currentTarget.value);
+          }}
           className="mb-4 p-2"
         />
 
@@ -31,10 +45,14 @@ export default function LoginPage() {
             type={showPassword ? "text" : "password"}
             name="password"
             placeholder="******"
+            defaultValue={inputPassword}
+            onChange={(e) => {
+              setInputPassword(e.currentTarget.value);
+            }}
             className="w-full p-2"
           />
           <button
-            onClick={onShowPasswordClick}
+            onClick={() => setShowPassword(true)}
             type="button"
             className="p-1 absolute right-2 text-disabled"
           >
@@ -48,11 +66,21 @@ export default function LoginPage() {
 
         <button
           type="submit"
+          disabled={isLoading}
           className="p-2 rounded-xl font-semibold bg-primary text-on-primary"
         >
           Confirm
         </button>
       </form>
+
+      {showErrorDialog && (
+        <ErrorMessage
+          message={error}
+          onClose={() => {
+            setShowErrorDialog(false);
+          }}
+        />
+      )}
     </>
   );
 }

@@ -1,48 +1,29 @@
 "use client";
 
 import ErrorMessage from "@/components/dialog/ErrorMessage";
-import { registerUser } from "@/libs/action";
+import { registerUser } from "@/libs/actions/user";
 import { LucideEye, LucideEyeOff } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 
 export default function RegisterPage() {
+  const [inputName, setInputName] = useState("");
+  const [inputEmail, setInputEmail] = useState("");
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
 
-  const onSubmitForm = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const [error, formAction, isLoading] = useActionState(registerUser, "");
 
-    const formData = new FormData(event.currentTarget);
-    const inputName = formData.get("name") as string;
-    const inputEmail = formData.get("email") as string;
-    const inputPassword = formData.get("password") as string;
-    const inputConfirmPassword = formData.get("confirm-password") as string;
-
-    const regex = /^[a-zA-Z0-9\s]+$/;
-    const name = inputName.trim();
-
-    if (!inputName || !inputEmail || !inputPassword || !inputConfirmPassword) {
-      setErrorMessage("All inputs are required.");
-      return;
+  useEffect(() => {
+    if (error.length > 0) {
+      setShowErrorDialog(true);
     }
-
-    if (!regex.test(name)) {
-      setErrorMessage("Name cannot contain symbols.");
-      return;
-    }
-
-    if (inputPassword !== inputConfirmPassword) {
-      setErrorMessage("Confirm Password is not the same as Password.");
-      return;
-    }
-
-    await registerUser(formData);
-  };
+  }, [error]);
 
   return (
     <>
-      <form onSubmit={onSubmitForm} method="post" className="flex flex-col">
+      <form action={formAction} className="flex flex-col">
         <label htmlFor="name" className="mb-1 text-sm font-medium">
           Name
         </label>
@@ -50,6 +31,10 @@ export default function RegisterPage() {
           type="text"
           name="name"
           placeholder="John Doe"
+          defaultValue={inputName}
+          onChange={(e) => {
+            setInputName(e.currentTarget.value);
+          }}
           className="mb-4 p-2"
         />
 
@@ -60,6 +45,10 @@ export default function RegisterPage() {
           type="email"
           name="email"
           placeholder="johndoe@example.com"
+          defaultValue={inputEmail}
+          onChange={(e) => {
+            setInputEmail(e.currentTarget.value);
+          }}
           className="mb-4 p-2"
         />
 
@@ -111,17 +100,18 @@ export default function RegisterPage() {
 
         <button
           type="submit"
+          disabled={isLoading}
           className="p-2 rounded-xl font-semibold bg-primary text-on-primary"
         >
           Confirm
         </button>
       </form>
 
-      {errorMessage && (
+      {showErrorDialog && (
         <ErrorMessage
-          message={errorMessage}
+          message={error}
           onClose={() => {
-            setErrorMessage("");
+            setShowErrorDialog(false);
           }}
         />
       )}

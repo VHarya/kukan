@@ -22,7 +22,9 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="favicon.svg" type="image/x-icon" sizes="any" />
       </head>
-      <body className={`${inter.variable} antialiased`}>{children}</body>
+      <body className={`${inter.variable} min-h-screen antialiased`}>
+        {children}
+      </body>
     </html>
   );
 }
